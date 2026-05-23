@@ -1,28 +1,42 @@
 # Rice Sorter 🍚
 
-A timed sorting game where you drag white and brown rice grains into their matching bowls before time runs out.
+A timed sorting game built with Next.js and Canvas. Drag or throw rice grains into their matching bowls before time runs out.
 
 ## How to Play
 
-1. Rice grains of two types (white & brown) scatter across the screen
-2. Click and drag each grain into the correct bowl at the top
-3. White grains → **WHITE** bowl, brown grains → **BROWN** bowl
-4. Clear all grains to advance to the next level (time bonus awarded)
-5. Game ends when the timer reaches zero
+- **Click** a grain to pick it up, then click a bowl to place it
+- **Ctrl + Click** a grain to enter throw mode — pull back and release to fling it
+- White → **WHITE** bowl, Brown → **BROWN** bowl, and so on
+- Clear all grains to advance to the next level (time bonus awarded)
+- Game ends when the timer hits zero
+
+## Levels
+
+| Level | Name | Rice Types |
+|-------|------|------------|
+| 1–3 | NPC / Basmati Brainrot / Mewing | White, Brown |
+| 4–6 | Looksmaxxing / Rizz-otto / Doomscrolling | White, Brown, Red |
+| 7–10 | Delulu / Fanum Tax / The Goon Cave / Crashout | White, Brown, Red, Black |
 
 ## Versions
 
 | Path | Description |
 |------|-------------|
-| `first.html` | Original single-file HTML5 version (Canvas + Tailwind CDN) |
-| `web/` | Next.js app version (React, TypeScript, Tailwind CSS) |
+| `first.html` | Original single-file HTML5 prototype (Canvas + Tailwind CDN) |
+| `app/` + `components/` | Next.js app (React 19, TypeScript, Tailwind CSS v4, Canvas 2D) |
 
-## Running the Web Version
+## Running
 
 ```bash
-cd web
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
+
+## Build
+
+```bash
+npm run build
+npm start
+```

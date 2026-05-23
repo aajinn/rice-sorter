@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Rice Sorter",
   description: "Sort rice grains into the correct bowls!",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({
