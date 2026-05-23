@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rice Sorter</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #0f172a;
+      font-family: Arial, sans-serif;
+      user-select: none;
+    }
+
+    canvas {
+      display: block;
+      cursor: crosshair;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP MENU -->
+<div class="fixed top-5 left-1/2 -translate-x-1/2 z-50">
+  <div class="glass rounded-3xl px-8 py-4 text-white shadow-2xl">
+    <div class="flex items-center gap-10">
+
+      <div class="text-center">
+        <div class="text-xs text-gray-400 uppercase">Level</div>
+        <div id="levelText" class="text-2xl font-bold">1</div>
+      </div>
+
+      <div class="text-center">
+        <div class="text-xs text-gray-400 uppercase">Time</div>
+        <div id="timerText" class="text-2xl font-bold">60</div>
+      </div>
+
+      <div class="text-center">
+        <div class="text-xs text-gray-400 uppercase">White</div>
+        <div id="whiteCount" class="text-2xl font-bold">0</div>
+      </div>
+
+      <div class="text-center">
+        <div class="text-xs text-gray-400 uppercase">Brown</div>
+        <div id="brownCount" class="text-2xl font-bold">0</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="gameOver" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+  <div class="glass p-10 rounded-[30px] text-white text-center w-[420px]">
+
+    <h1 id="gameTitle" class="text-5xl font-black mb-4">
+      Game Over
+    </h1>
+
+    <p id="gameMessage" class="text-gray-300 mb-8">
+      You reached level 1
+    </p>
+
+    <button
+      onclick="restartGame()"
+      class="bg-white text-black px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition"
+    >
+      Play Again
+    </button>
+
+  </div>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let level = 1;
+let timer = 60;
+let gameEnded = false;
+
+let rice = [];
+let selected = null;
+
+let whiteRemaining = 0;
+let brownRemaining = 0;
+
+const mouse = {
+  x: 0,
+  y: 0,
+  down: false
+};
+
+const whiteBowl = {
+  x: canvas.width / 2 - 280,
+  y: 90,
+  w: 240,
+  h: 120,
+  label: "WHITE",
+  color: "#f8f6ec"
+};
+
+const brownBowl = {
+  x: canvas.width / 2 + 40,
+  y: 90,
+  w: 240,
+  h: 120,
+  label: "BROWN",
+  color: "#8b5a2b"
+};
+
+function updateUI() {
+  levelText.innerText = level;
+  timerText.innerText = timer;
+  whiteCount.innerText = whiteRemaining;
+  brownCount.innerText = brownRemaining;
+}
+
+function spawnRice() {
+  rice = [];
+
+  whiteRemaining = 0;
+  brownRemaining = 0;
+
+  const count = 35 + level * 12;
+
+  for (let i = 0; i < count; i++) {
+    const type = Math.random() > 0.5 ? "white" : "brown";
+
+    if (type === "white") whiteRemaining++;
+    else brownRemaining++;
+
+    rice.push({
+      x: Math.random() * (canvas.width - 300) + 150,
+      y: Math.random() * (canvas.height - 350) + 250,
+      w: 18,
+      h: 7,
+      angle: Math.random() * Math.PI,
+      type,
+      placed: false
+    });
+  }
+}
+
+function drawBackground() {
+  const g = ctx.createLinearGradient(0,0,0,canvas.height);
+
+  g.addColorStop(0, "#111827");
+  g.addColorStop(1, "#020617");
+
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+function drawBowl(bowl) {
+  ctx.save();
+
+  ctx.fillStyle = bowl.color;
+
+  ctx.beginPath();
+  ctx.roundRect(
+    bowl.x,
+    bowl.y,
+    bowl.w,
+    bowl.h,
+    40
+  );
+
+  ctx.fill();
+
+  ctx.fillStyle = bowl.label === "WHITE" ? "#000" : "#fff";
+
+  ctx.font = "bold 26px Arial";
+  ctx.textAlign = "center";
+
+  ctx.fillText(
+    bowl.label,
+    bowl.x + bowl.w / 2,
+    bowl.y + bowl.h / 2 + 10
+  );
+
+  ctx.restore();
+}
+
+function drawRice(grain) {
+  ctx.save();
+
+  ctx.translate(grain.x, grain.y);
+  ctx.rotate(grain.angle);
+
+  ctx.beginPath();
+
+  ctx.roundRect(
+    -grain.w / 2,
+    -grain.h / 2,
+    grain.w,
+    grain.h,
+    10
+  );
+
+  if (grain.type === "white") {
+    ctx.fillStyle = "#f8f6ec";
+  } else {
+    ctx.fillStyle = "#9b6b3f";
+  }
+
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = "rgba(0,0,0,0.4)";
+
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawTweezers() {
+  if (!mouse.down) return;
+
+  ctx.save();
+
+  ctx.strokeStyle = "#cbd5e1";
+  ctx.lineWidth = 5;
+
+  ctx.beginPath();
+
+  ctx.moveTo(mouse.x - 12, mouse.y - 35);
+  ctx.lineTo(mouse.x, mouse.y);
+
+  ctx.moveTo(mouse.x + 12, mouse.y - 35);
+  ctx.lineTo(mouse.x, mouse.y);
+
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+canvas.addEventListener("mousemove", e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+
+  if (selected) {
+    selected.x = mouse.x;
+    selected.y = mouse.y;
+  }
+});
+
+canvas.addEventListener("mousedown", () => {
+  mouse.down = true;
+
+  for (let grain of rice) {
+    if (grain.placed) continue;
+
+    const dx = grain.x - mouse.x;
+    const dy = grain.y - mouse.y;
+
+    if (Math.sqrt(dx * dx + dy * dy) < 20) {
+      selected = grain;
+      break;
+    }
+  }
+});
+
+canvas.addEventListener("mouseup", () => {
+  mouse.down = false;
+
+  if (selected) {
+    checkPlacement(selected);
+  }
+
+  selected = null;
+});
+
+function inside(grain, bowl) {
+  return (
+    grain.x > bowl.x &&
+    grain.x < bowl.x + bowl.w &&
+    grain.y > bowl.y &&
+    grain.y < bowl.y + bowl.h
+  );
+}
+
+function checkPlacement(grain) {
+  const inWhite = inside(grain, whiteBowl);
+  const inBrown = inside(grain, brownBowl);
+
+  if (grain.type === "white" && inWhite) {
+    grain.placed = true;
+    whiteRemaining--;
+  }
+
+  if (grain.type === "brown" && inBrown) {
+    grain.placed = true;
+    brownRemaining--;
+  }
+
+  if (
+    whiteRemaining === 0 &&
+    brownRemaining === 0
+  ) {
+    nextLevel();
+  }
+}
+
+function nextLevel() {
+  level++;
+  timer += 20;
+
+  spawnRice();
+}
+
+function endGame() {
+  gameEnded = true;
+
+  gameOver.classList.remove("hidden");
+
+  gameTitle.innerText = "Time Up";
+  gameMessage.innerText = `You reached level ${level}`;
+}
+
+function restartGame() {
+  level = 1;
+  timer = 60;
+  gameEnded = false;
+
+  gameOver.classList.add("hidden");
+
+  spawnRice();
+}
+
+setInterval(() => {
+  if (gameEnded) return;
+
+  timer--;
+
+  if (timer <= 0) {
+    endGame();
+  }
+
+  updateUI();
+}, 1000);
+
+function animate() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  drawBackground();
+
+  drawBowl(whiteBowl);
+  drawBowl(brownBowl);
+
+  for (let grain of rice) {
+    if (!grain.placed) {
+      drawRice(grain);
+    }
+  }
+
+  drawTweezers();
+
+  requestAnimationFrame(animate);
+}
+
+spawnRice();
+animate();
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
