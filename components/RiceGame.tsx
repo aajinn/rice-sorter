@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import type { Grain, GameState, Phase } from './types'
 import { ALL_TYPES } from './constants'
-import { getActiveTypes, RICE_CONFIG } from './constants'
+import { getActiveTypes, getLevelName, getRiceCount, RICE_CONFIG } from './constants'
 import {
   drawRiceGrain, drawBowl, drawParticles, drawFloatingTexts, drawSlingshotUI,
 } from './renderer'
@@ -312,6 +312,12 @@ export default function RiceGame() {
               <div className="text-[9px] text-gray-400 uppercase tracking-widest">Lvl</div>
               <div className="text-lg font-bold text-white">{displayLevel}</div>
             </div>
+            {getLevelName(displayLevel) && (
+              <div className="text-center min-w-[60px]">
+                <div className="text-[9px] text-gray-400 uppercase tracking-widest">Name</div>
+                <div className="text-xs font-semibold text-amber-300 whitespace-nowrap">{getLevelName(displayLevel)}</div>
+              </div>
+            )}
             <div className="w-px h-7 bg-white/10" />
             <div className="text-center min-w-[44px]">
               <div className="text-[9px] text-gray-400 uppercase tracking-widest">Time</div>
@@ -342,16 +348,35 @@ export default function RiceGame() {
 
       {phase === 'menu' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-[32px] p-10 text-center shadow-2xl w-[380px]">
-            <div className="text-6xl mb-3">🍚</div>
-            <h1 className="text-4xl font-black text-white mb-1">Rice Sorter</h1>
-            <p className="text-gray-400 text-sm mb-1">Sort rice into the right bowls</p>
-            <p className="text-gray-500 text-xs mb-4">Click to pick up · Hold Ctrl + Click to throw</p>
+          <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-[32px] p-8 text-center shadow-2xl w-[420px] max-h-[90vh] overflow-y-auto">
+            <div className="text-5xl mb-2">🍚</div>
+            <h1 className="text-3xl font-black text-white mb-1">Rice Sorter</h1>
+            <p className="text-gray-400 text-xs mb-3">Sort rice into the right bowls before time runs out</p>
+            <p className="text-gray-500 text-[10px] mb-4">Click to pick up · Hold <span className="text-gray-300 bg-white/10 px-1.5 py-0.5 rounded text-[9px] font-mono">Ctrl</span> + Click to throw</p>
+
+            <div className="bg-white/5 rounded-2xl p-4 mb-4 text-left">
+              <div className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-semibold">Levels</div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                {[1,2,3,4,5,6,7,8,9,10].map(lvl => (
+                  <div key={lvl} className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-500 font-mono text-xs w-4">{lvl}</span>
+                    <span className="text-white/90 text-xs">{getLevelName(lvl)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white/5 rounded-2xl p-3 mb-4 text-left">
+              <div className="text-[10px] text-gray-400">
+                <span>🍚 <span className="text-white/70">{getRiceCount(1)}–{getRiceCount(10)} grains</span></span>
+              </div>
+            </div>
+
             {highScore > 0 ? (
-              <p className="text-amber-400 font-bold mb-6">Best Level: {highScore}</p>
-            ) : <div className="mb-6" />}
+              <p className="text-amber-400 font-bold mb-4 text-sm">Best Level: {highScore}</p>
+            ) : <div className="mb-4" />}
             <button onClick={startGame}
-              className="bg-white text-black px-10 py-4 rounded-2xl font-bold text-lg hover:scale-105 active:scale-95 transition-transform shadow-xl cursor-pointer"
+              className="bg-white text-black px-10 py-3 rounded-2xl font-bold text-base hover:scale-105 active:scale-95 transition-transform shadow-xl cursor-pointer"
             >Start Game</button>
           </div>
         </div>

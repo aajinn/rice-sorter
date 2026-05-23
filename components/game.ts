@@ -1,5 +1,5 @@
 import type { Grain, Bowl, Particle, FloatingText, RiceCounts, RiceType } from './types'
-import { getActiveTypes, RICE_CONFIG, ALL_TYPES } from './constants'
+import { getActiveTypes, getRiceCount, RICE_CONFIG, ALL_TYPES } from './constants'
 
 // ─── Bowl creation ────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ export function createBowls(cw: number, lvl: number): Bowl[] {
 
 export function spawnRice(cw: number, ch: number, lvl: number) {
   const active = getActiveTypes(lvl)
-  const count = 25 + lvl * 8
+  const count = getRiceCount(lvl)
   const grains: Grain[] = []
   const remaining: RiceCounts = { white: 0, brown: 0, red: 0, black: 0 }
 

@@ -48,6 +48,27 @@ export const RICE_CONFIG: Record<RiceType, RiceConfig> = {
 
 export const ALL_TYPES: RiceType[] = ['white', 'brown', 'red', 'black']
 
+export const LEVEL_NAMES: Record<number, string> = {
+  1: 'NPC',
+  2: 'Basmati Brainrot',
+  3: 'Mewing',
+  4: 'Looksmaxxing',
+  5: 'Rizz-otto',
+  6: 'Doomscrolling',
+  7: 'Delulu',
+  8: 'Fanum Tax',
+  9: 'The Goon Cave',
+  10: 'Crashout',
+}
+
+export function getLevelName(level: number): string {
+  return LEVEL_NAMES[level] ?? ''
+}
+
+export function getRiceCount(level: number): number {
+  return Math.min(Math.floor(100 * Math.pow(1.55, level - 1)), 5000)
+}
+
 export function getActiveTypes(lvl: number): RiceType[] {
   if (lvl <= 3) return ['white', 'brown']
   if (lvl <= 6) return ['white', 'brown', 'red']
