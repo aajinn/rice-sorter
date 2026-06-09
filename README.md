@@ -1,4 +1,4 @@
-# Rice Sorter 🍚
+# Rice Sorter 
 
 A timed sorting game built with Next.js and Canvas. Drag or throw rice grains into their matching bowls before time runs out.
 
